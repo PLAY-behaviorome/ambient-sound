@@ -1,0 +1,67 @@
+---
+title: "Ambient sound levels: NY pilots"
+author: "Rick O. Gilmore"
+date: "`r Sys.Date()`"
+output:
+  github_document: default
+  html_document:
+    toc: true
+    toc_levels: 2
+    toc_floating: true
+    code_folding: show
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Install packman for subsequent package management
+if (!("pacman" %in% installed.packages()[,])) {
+    install.packages("pacman")
+}
+
+# Load packages
+pacman::p_load(ggplot2, dplyr)
+
+# Paths
+csv.dir <- "analysis/csv"
+```
+
+## Background
+
+This report provides exploratory plots for the ambient sound level measurements collected from the PLAY project pilot sites. Peak and average sound levels (in dB) are collected at 10 Hz, every 100 ms.
+
+## Import data and create aggregate data frame
+
+```{r import-aggregate, include=TRUE}
+db.file.list <- list.files(path = csv.dir, pattern = "^nyu", full.names = TRUE)
+
+db.df.list <- lapply(db.file.list, read.csv)
+
+db.aggregate.df <- Reduce(function(x, y) merge(x, y, all=TRUE),
+                          db.df.list)
+```
+
+## Plots
+
+### Histogram of average sound levels by site
+
+```{r plots-by-sub-db.avg}
+ggplot(data = db.aggregate.df, aes(x=db.avg)) +
+  geom_histogram() +
+  facet_wrap(facets = c("sub.num")) +
+  ggtitle("Average ambient sound in dB across 1 hour") +
+  xlab("db Average")
+```
+
+### Histogram of peak sound levels by site
+
+```{r plots-by-sub-db.peak}
+library(ggplot2)
+
+ggplot(data = db.aggregate.df, aes(x=db.peak)) +
+  geom_histogram() +
+  facet_wrap(facets = c("sub.num")) +
+  ggtitle("Peak ambient sound in dB across 1 hour") +
+  xlab("dB peak")
+```
